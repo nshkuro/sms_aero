@@ -1,0 +1,3 @@
+name = SMS Aero
+description = Integration with SMS Aero gateway.
+core = 7.x

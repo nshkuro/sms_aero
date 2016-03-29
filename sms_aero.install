@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Implements hook_uninstall().
+ */
+function sms_aero_uninstall() {
+  variable_del('sms_aero_username');
+  variable_del('sms_aero_password');
+  variable_del('sms_aero_sender');
+}

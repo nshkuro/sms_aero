@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * Implemetation hook_init()
+ */
+function sms_aero_init() {
+  module_load_include('inc', 'sms_aero', 'inc/sms_aero.api');
+}
+
+/**
+ * Implemetation hook_permission()
+ */
+function sms_aero_permission() {
+  return array(
+    'admin sms aero' => array(
+      'title' => 'Administer sms aero settings'
+    ),
+  );
+}
+
+/**
+ * Implemetation hook_menu()
+ */
+function sms_aero_menu() {
+  $items = array();
+
+  $items['admin/config/sms_aero'] = array(
+    'title' => 'SMS Aero config',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sms_aero_config_form'),
+    'access arguments' => array('admin sms aero'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function sms_aero_config_form() {
+  $form = array();
+  $client = sms_aero_get_client();
+
+  if ($client) {
+    $senders = $client->senders();
+    $balance = $client->balance();
+  }
+
+  $form['sms_aero_username'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username'),
+    '#default_value' => variable_get('sms_aero_username', ''),
+  );
+
+  $form['sms_aero_password'] = array(
+    '#type' => 'password',
+    '#title' => t('Password'),
+    '#default_value' => variable_get('sms_aero_password', ''),
+  );
+
+  if (!empty($senders)) {
+    $form['sms_aero_sender'] = array(
+      '#type' => 'select',
+      '#title' => t('Sender'),
+      '#options' => array_combine($senders['response'], $senders['response']),
+      '#default_value' => variable_get('sms_aero_sender'),
+    );
+  }
+
+  if (!empty($balance)) {
+    $form['balance'] = array(
+      '#type' => 'item',
+      '#title' => t('Balance'),
+      '#markup' => $balance['response']['balance'],
+    );
+  }
+
+  return system_settings_form($form);
+}
+
+function sms_aero_get_client() {
+  $username = variable_get('sms_aero_username');
+  $password = variable_get('sms_aero_password');
+  $sender = variable_get('sms_aero_sender');
+  if (!$username || !$password) {
+    return FALSE;
+  }
+  $smsaero_api = new SmsaeroApi($username, $password, $sender);
+  return $smsaero_api;
+}
